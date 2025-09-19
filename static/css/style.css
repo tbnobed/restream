@@ -578,6 +578,12 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0 1rem;
 }
 
+.container-header {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
 /* Full Width Container for 2-column layout */
 .container-fullwidth {
     width: 100%;
