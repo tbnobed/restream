@@ -1,38 +1,43 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - RE-STREAM LIVE</title>
-    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-4 text-center">
-                <!-- Logo and App Title -->
-                <img src="{{ url_for('static', filename='img/obedtv.png') }}" alt="App Logo" class="img-fluid mb-3" style="max-height: 100px;">
-                <h1 class="h4 mb-3">RE-STREAM LIVE</h1>
-                <!-- Login Form -->
-                <h2 class="h5 text-center mb-4"></h2>
-                <form method="POST" action="{{ url_for('login') }}">
-                    <div class="form-group mb-3">
-                        <label for="username">Username</label>
-                        <input type="text" name="username" class="form-control" id="username" required>
+    <div class="login-container fade-in">
+        <div class="login-card">
+            <img src="{{ url_for('static', filename='img/obedtv.png') }}" alt="RE-STREAM LIVE Logo" class="login-logo">
+            <h1 class="app-title mb-4">RE-STREAM LIVE</h1>
+            <p class="text-secondary mb-4">Sign in to your streaming management dashboard</p>
+            
+            <form method="POST" action="{{ url_for('login') }}" class="form-modern">
+                <div class="form-group-modern">
+                    <label for="username" class="form-label-modern">Username</label>
+                    <input type="text" name="username" class="form-control-modern" id="username" placeholder="Enter your username" required>
+                </div>
+                <div class="form-group-modern">
+                    <label for="password" class="form-label-modern">Password</label>
+                    <input type="password" name="password" class="form-control-modern" id="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn-modern btn-primary-modern w-100">
+                    <span>Sign In</span>
+                </button>
+            </form>
+            
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert-modern alert-danger mt-4">
+                        <span>⚠️</span>
+                        <span>{{ messages[0] }}</span>
                     </div>
-                    <div class="form-group mb-3">
-                        <label for="password">Password</label>
-                        <input type="password" name="password" class="form-control" id="password" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Login</button>
-                </form>
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        <div class="alert alert-danger mt-3">
-                            {{ messages[0] }}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-            </div>
+                {% endif %}
+            {% endwith %}
         </div>
     </div>
 </body>

@@ -91,9 +91,11 @@ function initializeSocketListeners() {
 }
 
 function showPreviewError(message) {
-    const container = document.querySelector('.preview-container');
+    const container = document.querySelector('.preview-container-modern') || document.querySelector('.preview-container');
+    if (!container) return;
+    
     const errorDiv = document.createElement('div');
-    errorDiv.className = 'preview-error alert alert-danger m-2';
+    errorDiv.className = 'preview-error';
     errorDiv.innerHTML = `<strong>Error:</strong> ${message}`;
     
     const existingError = container.querySelector('.preview-error');
@@ -105,7 +107,9 @@ function showPreviewError(message) {
 }
 
 function clearPreviewError() {
-    const container = document.querySelector('.preview-container');
+    const container = document.querySelector('.preview-container-modern') || document.querySelector('.preview-container');
+    if (!container) return;
+    
     const errorDiv = container.querySelector('.preview-error');
     if (errorDiv) {
         errorDiv.remove();
@@ -188,43 +192,48 @@ function updateActiveStreams(streams) {
 
 function getStatusBadgeClass(status) {
     const statusClasses = {
-        'active': 'bg-success',
-        'warning': 'bg-warning',
-        'failed': 'bg-danger',
-        'restarting': 'bg-info'
+        'active': 'status-active',
+        'warning': 'status-warning',
+        'failed': 'status-failed',
+        'restarting': 'status-active'
     };
-    return `badge ${statusClasses[status] || 'bg-secondary'}`;
+    return `status-badge ${statusClasses[status] || 'status-active'}`;
 }
 
 function formatHealthData(health) {
-    if (!health) return '';
+    if (!health) return '<span class="text-muted">No data</span>';
     
     const lastCheck = health.last_health_check ? new Date(health.last_health_check).toLocaleTimeString() : 'N/A';
-    const lastRestart = health.last_restart ? new Date(health.last_restart).toLocaleTimeString() : 'N/A';
     
     return `
-        <div class="stream-health mt-2">
-            <small class="text-muted">
-                <div>FPS: ${health.fps || 0}</div>
-                <div>Bitrate: ${health.bitrate || '0 kb/s'}</div>
-                <div>Restart Count: ${health.restart_count || 0}</div>
-                <div>Last Check: ${lastCheck}</div>
-                ${health.last_restart ? `<div>Last Restart: ${lastRestart}</div>` : ''}
-                ${health.last_error ? `<div class="text-danger">Last Error: ${health.last_error}</div>` : ''}
-            </small>
+        <div class="stream-health-modern">
+            <div class="health-metric"><span>FPS:</span><span>${health.fps || 0}</span></div>
+            <div class="health-metric"><span>Bitrate:</span><span>${health.bitrate || '0 kb/s'}</span></div>
+            <div class="health-metric"><span>Restarts:</span><span>${health.restart_count || 0}</span></div>
+            ${health.last_error ? `<div class="health-metric text-danger"><span>Error:</span><span>${health.last_error.slice(0, 30)}...</span></div>` : ''}
         </div>
     `;
 }
 
 function createStreamElement(name, data) {
     const row = document.createElement('tr');
+    
+    // Format destination with emoji
+    const destinationIcons = {
+        'youtube': '🔴 YouTube',
+        'facebook': '📘 Facebook',
+        'custom': '🌐 Custom'
+    };
+    const formattedDestination = destinationIcons[data.destination] || data.destination;
+    
     row.innerHTML = `
         <td><strong>${name}</strong></td>
-        <td>${data.destination}</td>
+        <td>${formattedDestination}</td>
         <td><span class="${getStatusBadgeClass(data.status)}">${data.status}</span></td>
         <td>${data.owner}</td>
+        <td>${formatHealthData(data.health)}</td>
         <td>
-            <button class="btn btn-danger btn-sm" onclick="handleStopStream('${name}')">Stop</button>
+            <button class="btn-modern btn-secondary-modern" onclick="handleStopStream('${name}')" style="padding: 6px 12px; font-size: 0.8rem;">🛑 Stop</button>
         </td>
     `;
     return row;
