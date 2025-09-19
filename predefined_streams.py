@@ -8,7 +8,8 @@ RTMP_STREAMS = {
     "Plex 6": "rtmp://cdn1.obedtv.live/live/livestream6",
     "Plex 7": "rtmp://cdn1.obedtv.live/live/livestream7",
     "Plex 8": "rtmp://cdn1.obedtv.live/live/livestream8",
-    "MSM Live": "https://tbn-jw.cdn.vustreams.com/live/merit-dev/live.isml/playlist.m3u8"
+    "Socal 1": "rtmp://cdn1.obedtv.live/live/livestream8",
+
     
 }
 
@@ -23,7 +24,7 @@ M3U8_STREAMS = {
     "Plex 6": "http://cdn1.obedtv.live:2022/live/livestream6.m3u8",
     "Plex 7": "http://cdn1.obedtv.live:2022/live/livestream7.m3u8",
     "Plex 8": "http://cdn1.obedtv.live:2022/live/livestream8.m3u8",
-    "MSM Live": "https://tbn-jw.cdn.vustreams.com/live/merit-dev/live.isml/playlist.m3u8"
+
     
    
 }
