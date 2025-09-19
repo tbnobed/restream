@@ -104,13 +104,6 @@ class StreamManager:
                 f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60 '
                 f'-f flv rtmps://live-upload.instagram.com:443/rtmp/{stream_key}'
             )
-        elif destination == "x":
-            # X (Twitter) Live Producer provides custom RTMP URLs per broadcast
-            # Users should use "custom" destination and paste their X Live RTMP URL
-            return (
-                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60 '
-                f'-f flv {destination}/{stream_key}'
-            )
         else:
             # Custom or RTMP destination
             return (
