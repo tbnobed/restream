@@ -1,0 +1,129 @@
+
+ubuntu@obtv-xtreem:~/restream$ chmod +x install.sh
+ubuntu@obtv-xtreem:~/restream$ ./install.sh
+🚀 Starting RE-STREAM LIVE installation...
+[INFO] RE-STREAM LIVE Installation Script
+[INFO] ==================================
+[INFO] Operating System: debian
+[INFO] Installing system dependencies...
+[INFO] Detected Debian/Ubuntu system
+Hit:1 http://security.ubuntu.com/ubuntu jammy-security InRelease
+Hit:2 http://nova.clouds.archive.ubuntu.com/ubuntu jammy InRelease
+Get:3 http://nova.clouds.archive.ubuntu.com/ubuntu jammy-updates InRelease [128 kB]
+Hit:4 http://nova.clouds.archive.ubuntu.com/ubuntu jammy-backports InRelease
+Get:5 http://nova.clouds.archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [2901 kB]
+Get:6 http://nova.clouds.archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1231 kB]
+Fetched 4260 kB in 2s (2022 kB/s)
+Reading package lists... Done
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+python3 is already the newest version (3.10.6-1~22.04.1).
+ffmpeg is already the newest version (7:4.4.2-0ubuntu0.22.04.1).
+python3-pip is already the newest version (22.0.2+dfsg-1ubuntu0.6).
+python3-venv is already the newest version (3.10.6-1~22.04.1).
+0 upgraded, 0 newly installed, 0 to remove and 53 not upgraded.
+[SUCCESS] System dependencies installed successfully
+[INFO] Checking Python version...
+[INFO] Found Python 3.10
+[SUCCESS] Python version is compatible
+[INFO] Checking FFmpeg installation...
+[SUCCESS] FFmpeg found: 4.4.2-0ubuntu0.22.04.1
+[INFO] Creating Python virtual environment...
+[SUCCESS] Virtual environment created
+[INFO] Installing Python dependencies...
+Requirement already satisfied: pip in ./venv/lib/python3.10/site-packages (22.0.2)
+Collecting pip
+  Downloading pip-25.2-py3-none-any.whl (1.8 MB)
+     ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 1.8/1.8 MB 14.6 MB/s eta 0:00:00
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 22.0.2
+    Uninstalling pip-22.0.2:
+      Successfully uninstalled pip-22.0.2
+Successfully installed pip-25.2
+Collecting Flask==3.1.2 (from -r requirements.txt (line 1))
+  Downloading flask-3.1.2-py3-none-any.whl.metadata (3.2 kB)
+Collecting flask-cors==6.0.1 (from -r requirements.txt (line 2))
+  Downloading flask_cors-6.0.1-py3-none-any.whl.metadata (5.3 kB)
+Collecting Flask-Login==0.6.3 (from -r requirements.txt (line 3))
+  Downloading Flask_Login-0.6.3-py3-none-any.whl.metadata (5.8 kB)
+Collecting Flask-SocketIO==5.5.1 (from -r requirements.txt (line 4))
+  Downloading Flask_SocketIO-5.5.1-py3-none-any.whl.metadata (2.6 kB)
+Collecting Werkzeug==3.1.3 (from -r requirements.txt (line 5))
+  Downloading werkzeug-3.1.3-py3-none-any.whl.metadata (3.7 kB)
+Collecting python-engineio==4.12.2 (from -r requirements.txt (line 6))
+  Downloading python_engineio-4.12.2-py3-none-any.whl.metadata (2.2 kB)
+Collecting python-socketio==5.13.0 (from -r requirements.txt (line 7))
+  Downloading python_socketio-5.13.0-py3-none-any.whl.metadata (3.2 kB)
+Collecting bidict==0.23.1 (from -r requirements.txt (line 8))
+  Downloading bidict-0.23.1-py3-none-any.whl.metadata (8.7 kB)
+Collecting blinker==1.9.0 (from -r requirements.txt (line 9))
+  Downloading blinker-1.9.0-py3-none-any.whl.metadata (1.6 kB)
+Collecting click==8.3.0 (from -r requirements.txt (line 10))
+  Downloading click-8.3.0-py3-none-any.whl.metadata (2.6 kB)
+Collecting h11==0.16.0 (from -r requirements.txt (line 11))
+  Downloading h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting itsdangerous==2.2.0 (from -r requirements.txt (line 12))
+  Downloading itsdangerous-2.2.0-py3-none-any.whl.metadata (1.9 kB)
+Collecting Jinja2==3.1.6 (from -r requirements.txt (line 13))
+  Downloading jinja2-3.1.6-py3-none-any.whl.metadata (2.9 kB)
+Collecting MarkupSafe==3.0.2 (from -r requirements.txt (line 14))
+  Downloading MarkupSafe-3.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (4.0 kB)
+Collecting simple-websocket==1.1.0 (from -r requirements.txt (line 15))
+  Downloading simple_websocket-1.1.0-py3-none-any.whl.metadata (1.5 kB)
+Collecting wsproto==1.2.0 (from -r requirements.txt (line 16))
+  Downloading wsproto-1.2.0-py3-none-any.whl.metadata (5.6 kB)
+Downloading flask-3.1.2-py3-none-any.whl (103 kB)
+Downloading flask_cors-6.0.1-py3-none-any.whl (13 kB)
+Downloading Flask_Login-0.6.3-py3-none-any.whl (17 kB)
+Downloading Flask_SocketIO-5.5.1-py3-none-any.whl (18 kB)
+Downloading werkzeug-3.1.3-py3-none-any.whl (224 kB)
+Downloading python_engineio-4.12.2-py3-none-any.whl (59 kB)
+Downloading python_socketio-5.13.0-py3-none-any.whl (77 kB)
+Downloading bidict-0.23.1-py3-none-any.whl (32 kB)
+Downloading blinker-1.9.0-py3-none-any.whl (8.5 kB)
+Downloading click-8.3.0-py3-none-any.whl (107 kB)
+Downloading h11-0.16.0-py3-none-any.whl (37 kB)
+Downloading itsdangerous-2.2.0-py3-none-any.whl (16 kB)
+Downloading jinja2-3.1.6-py3-none-any.whl (134 kB)
+Downloading MarkupSafe-3.0.2-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (20 kB)
+Downloading simple_websocket-1.1.0-py3-none-any.whl (13 kB)
+Downloading wsproto-1.2.0-py3-none-any.whl (24 kB)
+Installing collected packages: MarkupSafe, itsdangerous, h11, click, blinker, bidict, wsproto, Werkzeug, Jinja2, simpl       e-websocket, Flask, python-engineio, Flask-Login, flask-cors, python-socketio, Flask-SocketIO
+Successfully installed Flask-3.1.2 Flask-Login-0.6.3 Flask-SocketIO-5.5.1 Jinja2-3.1.6 MarkupSafe-3.0.2 Werkzeug-3.1.3        bidict-0.23.1 blinker-1.9.0 click-8.3.0 flask-cors-6.0.1 h11-0.16.0 itsdangerous-2.2.0 python-engineio-4.12.2 python-       socketio-5.13.0 simple-websocket-1.1.0 wsproto-1.2.0
+[SUCCESS] Python dependencies installed successfully
+[INFO] Setting up application...
+[SUCCESS] Application setup completed
+[INFO] Creating startup script...
+[SUCCESS] Startup script created (start.sh)
+[INFO] Creating systemd service file...
+[SUCCESS] Systemd service file created (re-stream-live.service)
+[INFO] To install as a system service, run:
+[INFO]   sudo cp re-stream-live.service /etc/systemd/system/
+[INFO]   sudo systemctl enable re-stream-live
+[INFO]   sudo systemctl start re-stream-live
+[SUCCESS] Installation completed successfully! 🎉
+[INFO]
+[INFO] Next steps:
+[INFO] 1. Start the application: ./start.sh
+[INFO] 2. Open your browser and go to: http://localhost:5000
+[INFO] 3. Login with: username=master_admin, password=masterpassword
+[INFO]
+[INFO] Default credentials:
+[INFO]   Username: master_admin
+[INFO]   Password: masterpassword
+[INFO]
+[WARNING] IMPORTANT: Change the default password after first login!
+[INFO]
+[INFO] For production deployment:
+[INFO] - Set FLASK_SECRET_KEY environment variable
+[INFO] - Configure firewall to allow port 5000
+[INFO] - Consider using a reverse proxy (nginx/apache)
+[INFO] - Use the systemd service for auto-start
+ubuntu@obtv-xtreem:~/restream$ python3 main.py
+Traceback (most recent call last):
+  File "/home/ubuntu/restream/main.py", line 1, in <module>
+    from flask import Flask, render_template, redirect, url_for, request, flash, jsonify
+ModuleNotFoundError: No module named 'flask'
+ubuntu@obtv-xtreem:~/restream$
