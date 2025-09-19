@@ -2,6 +2,9 @@ import subprocess
 import threading
 import shlex
 import time
+import select
+import os
+import fcntl
 from datetime import datetime, timezone
 
 class StreamManager:
@@ -46,6 +49,7 @@ class StreamManager:
                     'last_restart': None,
                     'last_health_check': datetime.now(timezone.utc).isoformat()
                 }
+                # No terminate flag on fresh start
             }
             print(f"Stream '{stream_name}' started successfully.")
             # Start monitoring the stream
@@ -132,10 +136,60 @@ class StreamManager:
 
     def _monitor_stream(self, stream_name, process):
         """Monitor a running stream's FFmpeg output and update its status."""
+        last_activity = datetime.now(timezone.utc)
+        heartbeat_timeout = 30  # seconds without activity before marking as failed
+        
+        # Make stderr non-blocking
+        fd = process.stderr.fileno()
+        fl = fcntl.fcntl(fd, fcntl.F_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, fl | os.O_NONBLOCK)
+        
+        partial_line = ""
+        
         while process.poll() is None:
-            error_line = process.stderr.readline()
-            if error_line:
-                self._update_stream_stats(stream_name, error_line.strip())
+            # Check if process should be terminated due to fatal error
+            stream = self.active_streams.get(stream_name)
+            if stream and stream.get('_terminate_requested'):
+                print(f"Terminating stream '{stream_name}' due to fatal error")
+                try:
+                    process.terminate()
+                    process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                break
+            
+            # Non-blocking read with timeout
+            ready, _, _ = select.select([process.stderr], [], [], 1.0)
+            
+            if ready:
+                try:
+                    chunk = process.stderr.read(1024)
+                    if chunk:
+                        last_activity = datetime.now(timezone.utc)
+                        partial_line += chunk
+                        
+                        # Process complete lines (both \n and \r as delimiters)
+                        while '\n' in partial_line or '\r' in partial_line:
+                            if '\n' in partial_line:
+                                line, partial_line = partial_line.split('\n', 1)
+                            else:
+                                line, partial_line = partial_line.split('\r', 1)
+                            
+                            if line.strip():
+                                self._update_stream_stats(stream_name, line.strip())
+                except (BlockingIOError, OSError):
+                    pass
+            
+            # Check for heartbeat timeout
+            time_since_activity = (datetime.now(timezone.utc) - last_activity).total_seconds()
+            if time_since_activity > heartbeat_timeout:
+                print(f"Stream '{stream_name}' appears dead - no activity for {time_since_activity:.1f}s")
+                try:
+                    process.terminate()
+                    process.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                break
 
         # If stream ends unexpectedly, check for restarts
         if stream_name in self.active_streams:
@@ -171,11 +225,25 @@ class StreamManager:
             bitrate = log_line.split("bitrate=")[1].split()[0]
             stream['health']['bitrate'] = bitrate
 
-        # Parse errors
+        # Parse errors and specific failure conditions
         if 'error' in log_line.lower():
             stream['health']['last_error'] = log_line
             stream['status'] = 'warning'
+            
+        # Check for specific input/connection failures
+        if any(failure in log_line.lower() for failure in [
+            'connection refused', 'connection reset', 'no such file or directory',
+            'input/output error', 'server returned 404', 'server returned 403',
+            'rtmp_connect_stream', 'invalid data found', 'connection timed out',
+            'end of file'
+        ]):
+            stream['health']['last_error'] = log_line
+            stream['status'] = 'failed'
+            stream['_terminate_requested'] = True  # Signal monitor to terminate process
+            print(f"Stream '{stream_name}' detected fatal error: {log_line}")
 
+        # Update health check timestamp
+        stream['health']['last_health_check'] = datetime.now(timezone.utc).isoformat()
         self.socketio.emit('stream_status_update', self.get_active_streams())
 
     def _restart_stream(self, stream_name):
@@ -198,6 +266,11 @@ class StreamManager:
             stream['status'] = 'active'
             # Reset start_time for the new FFmpeg session
             stream['start_time'] = datetime.now(timezone.utc).isoformat()
+            # Clear any previous termination flags and errors
+            stream.pop('_terminate_requested', None)
+            stream['health']['last_error'] = None
+            stream['health']['fps'] = 0
+            stream['health']['bitrate'] = '0 kb/s'
 
             # Start monitoring the new process
             threading.Thread(
