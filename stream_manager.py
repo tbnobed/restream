@@ -196,6 +196,8 @@ class StreamManager:
             )
             stream['process'] = new_process
             stream['status'] = 'active'
+            # Reset start_time for the new FFmpeg session
+            stream['start_time'] = datetime.now(timezone.utc).isoformat()
 
             # Start monitoring the new process
             threading.Thread(
