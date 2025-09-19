@@ -17,7 +17,9 @@ class StreamManager:
             return False
 
         command = self._build_ffmpeg_command(input_source, destination, stream_key)
-        print(f"Starting stream '{stream_name}' with command: {command}")
+        # Log command without exposing stream key
+        safe_command = command.replace(stream_key, '[STREAM_KEY_REDACTED]') if stream_key else command
+        print(f"Starting stream '{stream_name}' with command: {safe_command}")
 
         try:
             process = subprocess.Popen(
@@ -31,6 +33,7 @@ class StreamManager:
                 'process': process,
                 'input': input_source,
                 'destination': destination,
+                'stream_key': stream_key,
                 'status': 'active',
                 'owner': owner,
                 'health': {
@@ -96,6 +99,18 @@ class StreamManager:
                 f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60  '
                 f'-f flv rtmps://live-api-s.facebook.com:443/rtmp/{stream_key}'
             )
+        elif destination == "instagram":
+            return (
+                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60 '
+                f'-f flv rtmps://live-upload.instagram.com:443/rtmp/{stream_key}'
+            )
+        elif destination == "x":
+            # X (Twitter) Live Producer provides custom RTMP URLs per broadcast
+            # Users should use "custom" destination and paste their X Live RTMP URL
+            return (
+                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60 '
+                f'-f flv {destination}/{stream_key}'
+            )
         else:
             # Custom or RTMP destination
             return (
@@ -158,7 +173,7 @@ class StreamManager:
 
         # Restart the FFmpeg process
         command = self._build_ffmpeg_command(
-            stream['input'], stream['destination'], stream.get('stream_key', '')
+            stream['input'], stream['destination'], stream['stream_key']
         )
         try:
             new_process = subprocess.Popen(

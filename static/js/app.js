@@ -68,7 +68,7 @@ function handleStartStream() {
         : document.getElementById('destination').value;
     const streamKey = document.getElementById('streamKey').value;
 
-    if (!streamName || !inputSource || !destination || ((destination === 'youtube' || destination === 'facebook') && !streamKey)) {
+    if (!streamName || !inputSource || !destination || ((destination === 'youtube' || destination === 'facebook' || destination === 'instagram') && !streamKey)) {
         alert('Please fill in all required fields.');
         return;
     }
@@ -222,6 +222,8 @@ function createStreamElement(name, data) {
     const destinationIcons = {
         'youtube': '🔴 YouTube',
         'facebook': '📘 Facebook',
+        'instagram': '📷 Instagram',
+        'x': '❌ X Live',
         'custom': '🌐 Custom'
     };
     const formattedDestination = destinationIcons[data.destination] || data.destination;
