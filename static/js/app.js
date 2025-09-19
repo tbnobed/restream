@@ -228,8 +228,30 @@ function createStreamElement(name, data) {
     };
     const formattedDestination = destinationIcons[data.destination] || data.destination;
     
+    // Format source for display
+    const formatSource = (input) => {
+        if (!input) return '📺 Unknown';
+        
+        // Check if it's a custom URL
+        if (input.startsWith('rtmp://') || input.startsWith('rtmps://')) {
+            return '🔧 Custom RTMP';
+        }
+        
+        // Check if it's from predefined streams (contains common stream names)
+        if (input.includes('plex') || input.toLowerCase().includes('plex')) {
+            return '📺 Plex';
+        }
+        if (input.includes('msm') || input.toLowerCase().includes('msm')) {
+            return '📺 MSM Live';
+        }
+        
+        // Default to showing first part of URL or just "Custom"
+        return '📺 Custom Source';
+    };
+    
     row.innerHTML = `
         <td><strong>${name}</strong></td>
+        <td>${formatSource(data.input)}</td>
         <td>${formattedDestination}</td>
         <td><span class="${getStatusBadgeClass(data.status)}">${data.status}</span></td>
         <td>${data.owner}</td>
