@@ -9,16 +9,9 @@ window.addEventListener('load', function() {
 });
 
 async function testStreamConnection(url) {
-    try {
-        const response = await fetch(url, {
-            method: 'HEAD',
-            mode: 'cors'
-        });
-        return response.ok;
-    } catch (error) {
-        console.error('Stream connection test failed:', error);
-        return false;
-    }
+    // Skip connection test to avoid CORS issues
+    // Let HLS.js handle the stream loading and error handling directly
+    return true;
 }
 
 function initializeControls() {
@@ -139,8 +132,19 @@ async function initializeHLSPlayer(url) {
         hls = new Hls();
         
         hls.on(Hls.Events.ERROR, (event, data) => {
+            console.error('HLS error:', data);
             if (data.fatal) {
-                showPreviewError('Fatal error occurred');
+                switch(data.type) {
+                    case Hls.ErrorTypes.NETWORK_ERROR:
+                        showPreviewError('Network error - stream may be unavailable');
+                        break;
+                    case Hls.ErrorTypes.MEDIA_ERROR:
+                        showPreviewError('Media error - stream format issue');
+                        break;
+                    default:
+                        showPreviewError('Stream playback error occurred');
+                        break;
+                }
                 stopPreview();
             }
         });
