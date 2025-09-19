@@ -129,6 +129,6 @@
 
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
     <script src="{{ url_for('static', filename='js/hls.min.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}?v={{ range(1000, 9999) | random }}"></script>
 </body>
 </html>
