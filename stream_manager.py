@@ -2,7 +2,7 @@ import subprocess
 import threading
 import shlex
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 class StreamManager:
     def __init__(self, socketio):
@@ -37,13 +37,14 @@ class StreamManager:
                 'status': 'active',
                 'owner': owner,
                 'source_name': source_name or 'Unknown',
+                'start_time': datetime.now(timezone.utc).isoformat(),
                 'health': {
                     'fps': 0,
                     'bitrate': '0 kb/s',
                     'last_error': None,
                     'restart_count': 0,
                     'last_restart': None,
-                    'last_health_check': datetime.now().isoformat()
+                    'last_health_check': datetime.now(timezone.utc).isoformat()
                 }
             }
             print(f"Stream '{stream_name}' started successfully.")
@@ -99,6 +100,7 @@ class StreamManager:
                 'status': info['status'],
                 'owner': info['owner'],
                 'source_name': info.get('source_name', 'Unknown'),
+                'start_time': info.get('start_time'),
                 'health': info['health']
             }
             for name, info in self.active_streams.items()
@@ -140,7 +142,7 @@ class StreamManager:
             stream = self.active_streams[stream_name]
             if stream['health']['restart_count'] < self.max_restart_attempts:
                 stream['health']['restart_count'] += 1
-                stream['health']['last_restart'] = datetime.now().isoformat()
+                stream['health']['last_restart'] = datetime.now(timezone.utc).isoformat()
                 print(f"Stream '{stream_name}' failed, attempting restart... (Attempt {stream['health']['restart_count']})")
                 time.sleep(self.restart_delay)  # Add a delay before restarting
                 self._restart_stream(stream_name)

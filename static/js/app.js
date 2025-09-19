@@ -271,11 +271,20 @@ function createStreamElement(name, data) {
     // Use the actual source name if available, fallback to old logic for backward compatibility
     const sourceDisplay = data.source_name ? `📺 ${data.source_name}` : formatSource(data.input);
     
+    // Calculate stream duration
+    const duration = calculateStreamDuration(data.start_time);
+    const statusWithDuration = `
+        <div class="status-container">
+            <span class="${getStatusBadgeClass(data.status)}">${data.status}</span>
+            <div class="stream-duration">${duration}</div>
+        </div>
+    `;
+    
     row.innerHTML = `
         <td><strong>${name}</strong></td>
         <td>${sourceDisplay}</td>
         <td>${formattedDestination}</td>
-        <td><span class="${getStatusBadgeClass(data.status)}">${data.status}</span></td>
+        <td>${statusWithDuration}</td>
         <td>${data.owner}</td>
         <td>${formatHealthData(data.health)}</td>
         <td>
@@ -302,6 +311,26 @@ function handleStopStream(streamName) {
             button.innerHTML = originalText;
         }
     });
+}
+
+function calculateStreamDuration(startTime) {
+    if (!startTime) return '';
+    
+    const start = new Date(startTime);
+    const now = new Date();
+    const diffMs = now - start;
+    
+    const hours = Math.floor(diffMs / (1000 * 60 * 60));
+    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+    
+    if (hours > 0) {
+        return `${hours}h ${minutes}m`;
+    } else if (minutes > 0) {
+        return `${minutes}m ${seconds}s`;
+    } else {
+        return `${seconds}s`;
+    }
 }
 
 function requestStreamStatus() {
