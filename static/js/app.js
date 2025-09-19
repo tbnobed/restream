@@ -286,11 +286,20 @@ function createStreamElement(name, data) {
 }
 
 function handleStopStream(streamName) {
+    // Disable the button and show stopping state
+    const button = event.target;
+    const originalText = button.innerHTML;
+    button.disabled = true;
+    button.innerHTML = '⏳ Stopping...';
+    
     socket.emit('stop_stream', { stream_name: streamName }, (response) => {
         if (response.success) {
             requestStreamStatus();
         } else {
             alert(response.message || 'Failed to stop stream');
+            // Re-enable button if failed
+            button.disabled = false;
+            button.innerHTML = originalText;
         }
     });
 }

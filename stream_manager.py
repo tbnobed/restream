@@ -68,9 +68,24 @@ class StreamManager:
         if user_role not in ['master_admin', 'admin'] and stream['owner'] != user_id:
             return False, 'Permission denied'
 
-        # Stop the stream process
-        stream['process'].terminate()
-        stream['process'].wait()
+        # Stop the stream process with timeout
+        try:
+            process = stream['process']
+            process.terminate()
+            
+            # Wait for process to terminate with timeout
+            try:
+                process.wait(timeout=3)  # Wait up to 3 seconds
+            except subprocess.TimeoutExpired:
+                # If it doesn't terminate gracefully, force kill
+                process.kill()
+                process.wait()
+                
+            print(f"Stream '{stream_name}' stopped successfully.")
+        except Exception as e:
+            print(f"Error stopping stream '{stream_name}': {e}")
+            
+        # Remove from active streams and notify
         del self.active_streams[stream_name]
         self.socketio.emit('stream_status_update', self.get_active_streams())
         return True, 'Stream stopped successfully'
@@ -83,6 +98,7 @@ class StreamManager:
                 'destination': info['destination'],
                 'status': info['status'],
                 'owner': info['owner'],
+                'source_name': info.get('source_name', 'Unknown'),
                 'health': info['health']
             }
             for name, info in self.active_streams.items()
