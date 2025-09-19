@@ -28,7 +28,7 @@
         </div>
     </header>
     
-    <div class="container fade-in">
+    <div class="container-fullwidth fade-in">
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages() %}
             {% if messages %}
@@ -39,85 +39,92 @@
             {% endif %}
         {% endwith %}
 
-        <!-- Stream Control Section -->
-        <div class="modern-card mb-4">
-            <div class="stream-controls-modern">
-                <h2 class="text-gradient mb-4">📹 Start New Stream</h2>
-                
-                <div class="controls-grid">
-                    <div class="form-group-modern">
-                        <label for="streamName" class="form-label-modern">Stream Name</label>
-                        <input type="text" class="form-control-modern" id="streamName" placeholder="Enter unique stream name">
-                    </div>
-                    <div class="form-group-modern">
-                        <label for="inputSource" class="form-label-modern">Input Source</label>
-                        <select class="form-control-modern form-select-modern" id="inputSource">
-                            <option value="">Select Input Source</option>
-                            {% for name, url in rtmp_streams.items() %}
-                            <option value="{{ url }}" data-preview="{{ m3u8_streams[name] }}">📺 {{ name }}</option>
-                            {% endfor %}
-                            <option value="custom">🔧 Custom Input</option>
-                        </select>
-                        <input type="text" class="form-control-modern mt-2 d-none" id="customInput" placeholder="Enter custom RTMP URL">
-                    </div>
-                    <div class="form-group-modern">
-                        <label for="destination" class="form-label-modern">Destination Platform</label>
-                        <select class="form-control-modern form-select-modern" id="destination">
-                            <option value="youtube">🔴 YouTube Live</option>
-                            <option value="facebook">📘 Facebook Live</option>
-                            <option value="instagram">📷 Instagram Live</option>
-                            <option value="x">❌ X Live (Use Custom RTMP)</option>
-                            <option value="custom">🌐 Custom RTMP</option>
-                        </select>
-                        <input type="text" class="form-control-modern mt-2 d-none" id="customDestination" placeholder="Enter custom RTMP URL">
-                    </div>
-                    <div class="form-group-modern">
-                        <label for="streamKey" class="form-label-modern">Stream Key</label>
-                        <input type="text" class="form-control-modern" id="streamKey" placeholder="Enter your stream key">
+        <!-- Two Column Dashboard Layout -->
+        <div class="dashboard-grid mt-4">
+            <!-- Left Column: Stream Controls & Preview -->
+            <div class="dashboard-column">
+                <!-- Stream Control Section -->
+                <div class="modern-card">
+                    <div class="stream-controls-modern">
+                        <h2 class="text-gradient mb-4">📹 Start New Stream</h2>
+                        
+                        <div class="controls-grid">
+                            <div class="form-group-modern">
+                                <label for="streamName" class="form-label-modern">Stream Name</label>
+                                <input type="text" class="form-control-modern" id="streamName" placeholder="Enter unique stream name">
+                            </div>
+                            <div class="form-group-modern">
+                                <label for="inputSource" class="form-label-modern">Input Source</label>
+                                <select class="form-control-modern form-select-modern" id="inputSource">
+                                    <option value="">Select Input Source</option>
+                                    {% for name, url in rtmp_streams.items() %}
+                                    <option value="{{ url }}" data-preview="{{ m3u8_streams[name] }}">📺 {{ name }}</option>
+                                    {% endfor %}
+                                    <option value="custom">🔧 Custom Input</option>
+                                </select>
+                                <input type="text" class="form-control-modern mt-2 d-none" id="customInput" placeholder="Enter custom RTMP URL">
+                            </div>
+                            <div class="form-group-modern">
+                                <label for="destination" class="form-label-modern">Destination Platform</label>
+                                <select class="form-control-modern form-select-modern" id="destination">
+                                    <option value="youtube">🔴 YouTube Live</option>
+                                    <option value="facebook">📘 Facebook Live</option>
+                                    <option value="instagram">📷 Instagram Live</option>
+                                    <option value="x">❌ X Live (Use Custom RTMP)</option>
+                                    <option value="custom">🌐 Custom RTMP</option>
+                                </select>
+                                <input type="text" class="form-control-modern mt-2 d-none" id="customDestination" placeholder="Enter custom RTMP URL">
+                            </div>
+                            <div class="form-group-modern">
+                                <label for="streamKey" class="form-label-modern">Stream Key</label>
+                                <input type="text" class="form-control-modern" id="streamKey" placeholder="Enter your stream key">
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <button id="startStream" class="btn-modern btn-primary-modern">
+                                <span>🚀</span>
+                                <span>Start Streaming</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
-                <div class="text-center mt-4">
-                    <button id="startStream" class="btn-modern btn-primary-modern">
-                        <span>🚀</span>
-                        <span>Start Streaming</span>
-                    </button>
+                <!-- Video Preview Section -->
+                <div class="modern-card">
+                    <div class="p-4">
+                        <h3 class="text-gradient mb-3">🔍 Stream Preview</h3>
+                        <div class="preview-container-modern">
+                            <video id="videoPlayer" controls></video>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Active Streams -->
+            <div class="dashboard-column dashboard-column-right">
+                <div class="streams-table-modern">
+                    <div class="p-4 pb-0">
+                        <h2 class="text-gradient mb-4">📺 Active Streams</h2>
+                    </div>
+                    <table class="table-modern">
+                        <thead>
+                            <tr>
+                                <th>Stream Name</th>
+                                <th>Destination</th>
+                                <th>Status</th>
+                                <th>Owner</th>
+                                <th>Health</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="activeStreams">
+                            <!-- Stream rows will be dynamically populated by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
-        
-        <!-- Video Preview Section -->
-        <div class="modern-card mb-4">
-            <div class="p-4">
-                <h3 class="text-gradient mb-3">🔍 Stream Preview</h3>
-                <div class="preview-container-modern">
-                    <video id="videoPlayer" controls></video>
-                </div>
-            </div>
-        </div>
-
-        <!-- Active Streams Section -->
-        <div class="streams-table-modern mb-4">
-            <div class="p-4 pb-0">
-                <h2 class="text-gradient mb-4">📺 Active Streams</h2>
-            </div>
-            <table class="table-modern">
-                <thead>
-                    <tr>
-                        <th>Stream Name</th>
-                        <th>Destination</th>
-                        <th>Status</th>
-                        <th>Owner</th>
-                        <th>Health</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="activeStreams">
-                    <!-- Stream rows will be dynamically populated by JavaScript -->
-                </tbody>
-            </table>
-        </div>
-
     </div>
 
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>

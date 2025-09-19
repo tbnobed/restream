@@ -573,6 +573,65 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0 1rem;
 }
 
+/* Full Width Container for 2-column layout */
+.container-fullwidth {
+    width: 100%;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+/* Two Column Grid Layout */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 2rem;
+    min-height: calc(100vh - 100px);
+    align-items: start;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .container-fullwidth {
+        padding: 0 1rem;
+    }
+    
+    /* Disable sticky on mobile for better UX */
+    .dashboard-column-right {
+        position: static;
+        max-height: none;
+        overflow: visible;
+    }
+}
+
+/* Column Containers */
+.dashboard-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: fit-content;
+}
+
+/* Right column (Active Streams) styling */
+.dashboard-column-right {
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 2rem);
+    overflow-y: auto;
+}
+
+/* Table overflow handling for better responsiveness */
+.streams-table-modern {
+    overflow-x: auto;
+}
+
+.streams-table-modern .table-modern {
+    min-width: 800px;
+}
+
 /* Utility Classes */
 .text-center { text-align: center; }
 .text-right { text-align: right; }
