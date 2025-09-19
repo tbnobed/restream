@@ -18,7 +18,10 @@
                     <h1 class="app-title">RE-STREAM LIVE</h1>
                 </div>
                 <div class="d-flex gap-2">
-                    <a href="{{ url_for('change_password') }}" class="btn-modern btn-secondary-modern">⚙️ Change Password</a>
+                    {% if current_user.role == 'master_admin' %}
+                    <a href="{{ url_for('user_management') }}" class="btn-modern btn-secondary-modern">👥 Users</a>
+                    {% endif %}
+                    <a href="{{ url_for('change_password') }}" class="btn-modern btn-secondary-modern">⚙️ Password</a>
                     <a href="{{ url_for('logout') }}" class="btn-modern btn-secondary-modern">🚪 Logout</a>
                 </div>
             </div>
@@ -115,78 +118,6 @@
             </table>
         </div>
 
-        <!-- User Management Section (Only for Master Admin) -->
-        {% if current_user.role == 'master_admin' %}
-        <div class="user-management-modern">
-            <h2 class="text-gradient mb-4">👥 User Management</h2>
-
-            <!-- Add User Form -->
-            <form method="POST" action="{{ url_for('add_user') }}" class="mb-4">
-                <div class="controls-grid">
-                    <div class="form-group-modern">
-                        <label for="username" class="form-label-modern">Username</label>
-                        <input type="text" name="username" class="form-control-modern" placeholder="Enter username" required>
-                    </div>
-                    <div class="form-group-modern">
-                        <label for="password" class="form-label-modern">Password</label>
-                        <input type="password" name="password" class="form-control-modern" placeholder="Enter password" required>
-                    </div>
-                    <div class="form-group-modern">
-                        <label for="role" class="form-label-modern">User Role</label>
-                        <select name="role" class="form-control-modern form-select-modern" required>
-                            <option value="general">👤 General User</option>
-                            <option value="admin">🔑 Administrator</option>
-                        </select>
-                    </div>
-                    <div class="form-group-modern d-flex align-items-end">
-                        <button type="submit" class="btn-modern btn-primary-modern w-100">
-                            <span>➕</span>
-                            <span>Add User</span>
-                        </button>
-                    </div>
-                </div>
-            </form>
-
-            <!-- User List Table -->
-            <div class="streams-table-modern">
-                <table class="table-modern">
-                    <thead>
-                        <tr>
-                            <th>Username</th>
-                            <th>Role</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for username, details in users.items() %}
-                        <tr>
-                            <td>{{ username }}</td>
-                            <td>
-                                {% if details.role == 'master_admin' %}
-                                    <span class="status-badge status-failed">👑 Master Admin</span>
-                                {% elif details.role == 'admin' %}
-                                    <span class="status-badge status-warning">🔑 Admin</span>
-                                {% else %}
-                                    <span class="status-badge status-active">👤 General</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                {% if username != 'master_admin' %}
-                                <form method="POST" action="{{ url_for('delete_user') }}" class="d-inline">
-                                    <input type="hidden" name="username" value="{{ username }}">
-                                    <button type="submit" class="btn-modern btn-secondary-modern" onclick="return confirm('Are you sure you want to delete this user?')">🗑️ Delete</button>
-                                </form>
-                                {% else %}
-                                <span class="text-muted">Protected</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        {% endif %}
     </div>
 
     <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>

@@ -72,9 +72,16 @@ def index():
     return render_template(
         'index.html', 
         rtmp_streams=RTMP_STREAMS, 
-        m3u8_streams=M3U8_STREAMS, 
-        users=users if current_user.role in ['master_admin', 'admin'] else None
+        m3u8_streams=M3U8_STREAMS
     )
+
+@app.route('/users')
+@login_required
+def user_management():
+    if current_user.role != 'master_admin':
+        flash('Only the master admin can access user management.')
+        return redirect(url_for('index'))
+    return render_template('user_management.html', users=users)
 
 @app.route('/add_user', methods=['POST'])
 @login_required
@@ -95,7 +102,7 @@ def add_user():
             json.dump(users, f)
         flash('User added successfully.')
     
-    return redirect(url_for('index'))
+    return redirect(url_for('user_management'))
 
 @app.route('/delete_user', methods=['POST'])
 @login_required
@@ -113,7 +120,7 @@ def delete_user():
     else:
         flash('Cannot delete this user.')
 
-    return redirect(url_for('index'))
+    return redirect(url_for('user_management'))
 
 @app.route('/change_password', methods=['GET', 'POST'])
 @login_required
@@ -124,6 +131,9 @@ def change_password():
         with open(USER_DATA_FILE, 'w') as f:
             json.dump(users, f)
         flash('Password updated successfully.')
+        # Redirect master_admin back to user management, others to dashboard
+        if current_user.role == 'master_admin':
+            return redirect(url_for('user_management'))
         return redirect(url_for('index'))
 
     return render_template('change_password.html')
