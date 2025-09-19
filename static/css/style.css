@@ -400,19 +400,6 @@ h1, h2, h3, h4, h5, h6 {
     background: #fa709a;
 }
 
-.status-container {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 4px;
-}
-
-.stream-duration {
-    font-size: 0.75rem;
-    color: var(--text-secondary);
-    font-weight: 400;
-    opacity: 0.8;
-}
 
 /* Stream Health Info */
 .stream-health-modern {

@@ -271,14 +271,10 @@ function createStreamElement(name, data) {
     // Use the actual source name if available, fallback to old logic for backward compatibility
     const sourceDisplay = data.source_name ? `📺 ${data.source_name}` : formatSource(data.input);
     
-    // Calculate stream duration
+    // Calculate stream duration and integrate into status badge
     const duration = calculateStreamDuration(data.start_time);
-    const statusWithDuration = `
-        <div class="status-container">
-            <span class="${getStatusBadgeClass(data.status)}">${data.status}</span>
-            <div class="stream-duration">${duration}</div>
-        </div>
-    `;
+    const statusText = duration ? `${data.status} ${duration}` : data.status;
+    const statusWithDuration = `<span class="${getStatusBadgeClass(data.status)}">${statusText}</span>`;
     
     row.innerHTML = `
         <td><strong>${name}</strong></td>
