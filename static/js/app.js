@@ -237,12 +237,23 @@ function createStreamElement(name, data) {
             return '🔧 Custom RTMP';
         }
         
-        // Check if it's from predefined streams (contains common stream names)
+        // Check if it's from predefined streams (more comprehensive matching)
         if (input.includes('plex') || input.toLowerCase().includes('plex')) {
             return '📺 Plex';
         }
         if (input.includes('msm') || input.toLowerCase().includes('msm')) {
             return '📺 MSM Live';
+        }
+        if (input.includes('tbn') || input.toLowerCase().includes('tbn')) {
+            return '📺 TBN Live';
+        }
+        if (input.includes('obedtv') || input.toLowerCase().includes('obedtv') || input.includes('obtv')) {
+            return '📺 OBTV Stream';
+        }
+        
+        // Check for HLS/M3U8 streams (likely predefined)
+        if (input.includes('.m3u8') || input.includes('playlist')) {
+            return '📺 Live Stream';
         }
         
         // Default to showing first part of URL or just "Custom"
