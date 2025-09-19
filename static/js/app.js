@@ -60,13 +60,20 @@ function initializeControls() {
 
 function handleStartStream() {
     const streamName = document.getElementById('streamName').value;
-    const inputSource = document.getElementById('inputSource').value === 'custom' 
+    const inputSelect = document.getElementById('inputSource');
+    const inputSource = inputSelect.value === 'custom' 
         ? document.getElementById('customInput').value 
-        : document.getElementById('inputSource').value;
+        : inputSelect.value;
     const destination = document.getElementById('destination').value === 'custom'
         ? document.getElementById('customDestination').value
         : document.getElementById('destination').value;
     const streamKey = document.getElementById('streamKey').value;
+
+    // Get the source name from the selected option
+    const selectedOption = inputSelect.options[inputSelect.selectedIndex];
+    const sourceName = inputSelect.value === 'custom' 
+        ? 'Custom RTMP' 
+        : (selectedOption.dataset.sourceName || selectedOption.textContent.trim().replace('📺 ', ''));
 
     if (!streamName || !inputSource || !destination || ((destination === 'youtube' || destination === 'facebook' || destination === 'instagram') && !streamKey)) {
         alert('Please fill in all required fields.');
@@ -77,7 +84,8 @@ function handleStartStream() {
         stream_name: streamName,
         input: inputSource,
         destination: destination,
-        stream_key: streamKey
+        stream_key: streamKey,
+        source_name: sourceName
     });
 }
 
@@ -260,9 +268,12 @@ function createStreamElement(name, data) {
         return '📺 Custom Source';
     };
     
+    // Use the actual source name if available, fallback to old logic for backward compatibility
+    const sourceDisplay = data.source_name ? `📺 ${data.source_name}` : formatSource(data.input);
+    
     row.innerHTML = `
         <td><strong>${name}</strong></td>
-        <td>${formatSource(data.input)}</td>
+        <td>${sourceDisplay}</td>
         <td>${formattedDestination}</td>
         <td><span class="${getStatusBadgeClass(data.status)}">${data.status}</span></td>
         <td>${data.owner}</td>

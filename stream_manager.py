@@ -11,7 +11,7 @@ class StreamManager:
         self.max_restart_attempts = 3  # Maximum restart attempts before giving up
         self.restart_delay = 5  # Delay in seconds between restarts
 
-    def start_stream(self, stream_name, input_source, destination, stream_key, owner):
+    def start_stream(self, stream_name, input_source, destination, stream_key, owner, source_name=None):
         if stream_name in self.active_streams:
             print(f"Stream '{stream_name}' is already running.")
             return False
@@ -36,6 +36,7 @@ class StreamManager:
                 'stream_key': stream_key,
                 'status': 'active',
                 'owner': owner,
+                'source_name': source_name or 'Unknown',
                 'health': {
                     'fps': 0,
                     'bitrate': '0 kb/s',

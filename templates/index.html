@@ -58,9 +58,9 @@
                                 <select class="form-control-modern form-select-modern" id="inputSource">
                                     <option value="">Select Input Source</option>
                                     {% for name, url in rtmp_streams.items() %}
-                                    <option value="{{ url }}" data-preview="{{ m3u8_streams[name] }}">📺 {{ name }}</option>
+                                    <option value="{{ url }}" data-preview="{{ m3u8_streams[name] }}" data-source-name="{{ name }}">📺 {{ name }}</option>
                                     {% endfor %}
-                                    <option value="custom">🔧 Custom Input</option>
+                                    <option value="custom" data-source-name="Custom RTMP">🔧 Custom Input</option>
                                 </select>
                                 <input type="text" class="form-control-modern mt-2 d-none" id="customInput" placeholder="Enter custom RTMP URL">
                             </div>
