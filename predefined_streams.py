@@ -22,6 +22,8 @@ RTMP_STREAMS = {
     "Irving 2": "rtmp://cdn1.obedtv.live:1937/live/kdtx2",   
     "Irving 3": "rtmp://cdn1.obedtv.live:1937/live/kdtx3",
     "Irving 4": "rtmp://cdn1.obedtv.live:1937/live/kdtx4",
+    "SRidley_TD": "rtmp://cdn2.obedtv.live:1935/live/SRidley_TD",
+    "SRidley_TD2": "rtmp://cdn2.obedtv.live:1935/live/SRidley_TD2",
     "TBN Live": "https://6740bddc3aebe.streamlock.net/tbn-live/smil:monitor-tbn.smil/playlist.m3u8"
 
 }
@@ -51,6 +53,8 @@ M3U8_STREAMS = {
     "Irving 2": "http://cdn1.obedtv.live:2024/live/kdtx2.m3u8",
     "Irving 3": "http://cdn1.obedtv.live:2024/live/kdtx3.m3u8",
     "Irving 4": "http://cdn1.obedtv.live:2024/live/kdtx4.m3u8",
+    "SRidley_TD": "http://cdn2.obedtv.live:8080/live/SRidley_TD.m3u8",
+    "SRidley_TD2": "http://cdn2.obedtv.live:8080/live/SRidley_TD2.m3u8",
     "TBN Live": "https://6740bddc3aebe.streamlock.net/tbn-live/smil:monitor-tbn.smil/playlist.m3u8"
 
 }
