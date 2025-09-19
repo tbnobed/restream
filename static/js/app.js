@@ -139,6 +139,7 @@ async function initializeHLSPlayer(url) {
     }
     
     const video = document.getElementById('videoPlayer');
+    video.muted = true; // Ensure video loads muted
     
     if (Hls.isSupported()) {
         hls = new Hls();
