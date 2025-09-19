@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html data-bs-theme="dark">
+<head>
+    <title>Manage Users - RE-STREAM LIVE</title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container py-4">
+        <header class="d-flex align-items-center justify-content-between mb-4">
+            <div class="d-flex align-items-center">
+                <img src="{{ url_for('static', filename='img/obedtv.png') }}" alt="Logo" class="site-logo me-2">
+                <h1 class="h3 mb-0">Manage Users</h1>
+            </div>
+            <div>
+                <a href="{{ url_for('index') }}" class="btn btn-secondary">Back to Dashboard</a>
+                <a href="{{ url_for('logout') }}" class="btn btn-secondary">Logout</a>
+            </div>
+        </header>
+
+        <!-- User Management Section (Only for Master Admin) -->
+        <div class="user-management mt-4">
+            <h2 class="h4 mb-3">User Management</h2>
+
+            <!-- Add User Form -->
+            <form method="POST" action="{{ url_for('add_user') }}" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" name="username" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" name="password" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="role" class="form-label">Role</label>
+                        <select name="role" class="form-select" required>
+                            <option value="general">General User</option>
+                            <option value="admin">Admin</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Add User</button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Existing Users Table -->
+            <table class="table table-dark table-striped">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Role</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for username, details in users.items() %}
+                        <tr>
+                            <td>{{ username }}</td>
+                            <td>{{ details.role }}</td>
+                            <td>
+                                {% if username != 'master_admin' %}
+                                    <form method="POST" action="{{ url_for('delete_user') }}" style="display: inline;">
+                                        <input type="hidden" name="username" value="{{ username }}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-muted">Protected</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.socket.io/4.0.1/socket.io.min.js"></script>
+</body>
+</html>
