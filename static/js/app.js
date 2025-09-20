@@ -68,7 +68,6 @@ function handleStartStream() {
         ? document.getElementById('customDestination').value
         : document.getElementById('destination').value;
     const streamKey = document.getElementById('streamKey').value;
-    const streamQuality = document.getElementById('streamQuality').value;
 
     // Get the source name from the selected option
     const selectedOption = inputSelect.options[inputSelect.selectedIndex];
@@ -86,8 +85,7 @@ function handleStartStream() {
         input: inputSource,
         destination: destination,
         stream_key: streamKey,
-        source_name: sourceName,
-        quality: streamQuality
+        source_name: sourceName
     });
 }
 
@@ -279,14 +277,10 @@ function createStreamElement(name, data) {
     const statusText = duration ? `${data.status} ${duration}` : data.status;
     const statusWithDuration = `<span class="${getStatusBadgeClass(data.status)}">${statusText}</span>`;
     
-    // Format quality display
-    const qualityDisplay = data.quality ? formatQuality(data.quality) : '🎯 Source';
-    
     row.innerHTML = `
         <td><strong>${name}</strong></td>
         <td>${sourceDisplay}</td>
         <td>${formattedDestination}</td>
-        <td>${qualityDisplay}</td>
         <td>${statusWithDuration}</td>
         <td>${data.owner}</td>
         <td>${formatHealthData(data.health)}</td>
@@ -334,18 +328,6 @@ function calculateStreamDuration(startTime) {
     } else {
         return `${seconds}s`;
     }
-}
-
-function formatQuality(quality) {
-    const qualityLabels = {
-        'source': '🎯 Source',
-        '1080p60': '🔥 1080p60',
-        '1080p30': '⭐ 1080p30',
-        '720p60': '💎 720p60',
-        '720p30': '✨ 720p30',
-        '480p30': '📱 480p30'
-    };
-    return qualityLabels[quality] || quality;
 }
 
 function requestStreamStatus() {

@@ -149,11 +149,9 @@ def handle_start_stream(data):
     destination = data.get('destination')
     stream_key = data.get('stream_key')
     source_name = data.get('source_name')
-    quality = data.get('quality', 'source')
     
     success = stream_manager.start_stream(
-        stream_name, input_source, destination, stream_key, owner=current_user.id, 
-        source_name=source_name, quality=quality
+        stream_name, input_source, destination, stream_key, owner=current_user.id, source_name=source_name
     )
     return {'success': success}
 
