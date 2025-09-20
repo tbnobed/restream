@@ -14,12 +14,12 @@ class StreamManager:
         self.max_restart_attempts = 3  # Maximum restart attempts before giving up
         self.restart_delay = 5  # Delay in seconds between restarts
 
-    def start_stream(self, stream_name, input_source, destination, stream_key, owner, source_name=None):
+    def start_stream(self, stream_name, input_source, destination, stream_key, owner, source_name=None, quality='source'):
         if stream_name in self.active_streams:
             print(f"Stream '{stream_name}' is already running.")
             return False
 
-        command = self._build_ffmpeg_command(input_source, destination, stream_key)
+        command = self._build_ffmpeg_command(input_source, destination, stream_key, quality)
         # Log command without exposing stream key
         safe_command = command.replace(stream_key, '[STREAM_KEY_REDACTED]') if stream_key else command
         print(f"Starting stream '{stream_name}' with command: {safe_command}")
@@ -40,6 +40,7 @@ class StreamManager:
                 'status': 'active',
                 'owner': owner,
                 'source_name': source_name or 'Unknown',
+                'quality': quality,
                 'start_time': datetime.now(timezone.utc).isoformat(),
                 'health': {
                     'fps': 0,
@@ -104,35 +105,51 @@ class StreamManager:
                 'status': info['status'],
                 'owner': info['owner'],
                 'source_name': info.get('source_name', 'Unknown'),
+                'quality': info.get('quality', 'source'),
                 'start_time': info.get('start_time'),
                 'health': info['health']
             }
             for name, info in self.active_streams.items()
         }
 
-    def _build_ffmpeg_command(self, input_source, destination, stream_key):
+    def _build_ffmpeg_command(self, input_source, destination, stream_key, quality='source'):
+        # Build video encoding parameters based on quality setting
+        video_params = self._get_quality_params(quality)
+        
         # Build the appropriate FFmpeg command based on destination
         if destination == "youtube":
             return (
-                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60  '
+                f'ffmpeg -re -i {input_source} {video_params} -g 60 '
                 f'-f flv rtmp://a.rtmp.youtube.com/live2/{stream_key}'
             )
         elif destination == "facebook":
             return (
-                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60  '
+                f'ffmpeg -re -i {input_source} {video_params} -g 60 '
                 f'-f flv rtmps://live-api-s.facebook.com:443/rtmp/{stream_key}'
             )
         elif destination == "instagram":
             return (
-                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60 '
+                f'ffmpeg -re -i {input_source} {video_params} -g 60 '
                 f'-f flv rtmps://live-upload.instagram.com:443/rtmp/{stream_key}'
             )
         else:
             # Custom or RTMP destination
             return (
-                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60 '
+                f'ffmpeg -re -i {input_source} {video_params} -g 60 '
                 f'-f flv {destination}/{stream_key}'
             )
+    
+    def _get_quality_params(self, quality):
+        """Get FFmpeg encoding parameters for different quality presets."""
+        quality_presets = {
+            'source': '-c:v copy -c:a copy',
+            '1080p60': '-c:v libx264 -preset fast -crf 18 -maxrate 6000k -bufsize 12000k -vf scale=1920:1080 -r 60 -c:a aac -b:a 128k',
+            '1080p30': '-c:v libx264 -preset fast -crf 18 -maxrate 4500k -bufsize 9000k -vf scale=1920:1080 -r 30 -c:a aac -b:a 128k',
+            '720p60': '-c:v libx264 -preset fast -crf 20 -maxrate 4000k -bufsize 8000k -vf scale=1280:720 -r 60 -c:a aac -b:a 96k',
+            '720p30': '-c:v libx264 -preset fast -crf 20 -maxrate 2500k -bufsize 5000k -vf scale=1280:720 -r 30 -c:a aac -b:a 96k',
+            '480p30': '-c:v libx264 -preset fast -crf 22 -maxrate 1200k -bufsize 2400k -vf scale=854:480 -r 30 -c:a aac -b:a 64k'
+        }
+        return quality_presets.get(quality, quality_presets['source'])
 
     def _monitor_stream(self, stream_name, process):
         """Monitor a running stream's FFmpeg output and update its status."""
@@ -253,7 +270,8 @@ class StreamManager:
 
         # Restart the FFmpeg process
         command = self._build_ffmpeg_command(
-            stream['input'], stream['destination'], stream['stream_key']
+            stream['input'], stream['destination'], stream['stream_key'], 
+            stream.get('quality', 'source')
         )
         try:
             new_process = subprocess.Popen(
