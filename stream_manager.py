@@ -1,6 +1,5 @@
 import subprocess
 import threading
-import shlex
 import time
 import select
 import os
@@ -19,14 +18,14 @@ class StreamManager:
             print(f"Stream '{stream_name}' is already running.")
             return False
 
-        command = self._build_ffmpeg_command(input_source, destination, stream_key, srt_passphrase, srt_latency)
+        cmd_args = self._build_ffmpeg_command(input_source, destination, stream_key, srt_passphrase, srt_latency)
         # Log command without exposing stream key
-        safe_command = command.replace(stream_key, '[STREAM_KEY_REDACTED]') if stream_key else command
-        print(f"Starting stream '{stream_name}' with command: {safe_command}")
+        safe_args = [('[STREAM_KEY_REDACTED]' if (stream_key and stream_key in arg) else arg) for arg in cmd_args]
+        print(f"Starting stream '{stream_name}' with command: {' '.join(safe_args)}")
 
         try:
             process = subprocess.Popen(
-                shlex.split(command),
+                cmd_args,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 universal_newlines=True
@@ -112,58 +111,43 @@ class StreamManager:
         }
 
     def _build_ffmpeg_command(self, input_source, destination, stream_key, srt_passphrase=None, srt_latency=None):
-        # Wrap input in quotes if it contains special characters (e.g. SRT URLs with ?)
-        safe_input = f'"{input_source}"' if '?' in input_source or '&' in input_source else input_source
+        """Return a list of arguments for subprocess — no shell parsing, safe for any URL characters."""
+        base = ['ffmpeg', '-re', '-i', input_source, '-c:v', 'copy', '-c:a', 'copy']
 
         if destination == "youtube":
-            return (
-                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy -g 60 '
-                f'-f flv rtmp://a.rtmp.youtube.com/live2/{stream_key}'
-            )
+            return base + ['-g', '60', '-f', 'flv',
+                           f'rtmp://a.rtmp.youtube.com/live2/{stream_key}']
+
         elif destination == "facebook":
-            return (
-                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy -g 60 '
-                f'-f flv rtmps://live-api-s.facebook.com:443/rtmp/{stream_key}'
-            )
+            return base + ['-g', '60', '-f', 'flv',
+                           f'rtmps://live-api-s.facebook.com:443/rtmp/{stream_key}']
+
         elif destination == "instagram":
-            return (
-                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy -g 60 '
-                f'-f flv rtmps://live-upload.instagram.com:443/rtmp/{stream_key}'
-            )
+            return base + ['-g', '60', '-f', 'flv',
+                           f'rtmps://live-upload.instagram.com:443/rtmp/{stream_key}']
+
         elif destination == "srt":
-            # SRT destination: accept either a full srt:// URL or bare host:port
             latency = int(srt_latency) if srt_latency else 120
-            raw = stream_key.strip()
+            raw = (stream_key or '').strip()
 
             if raw.startswith('srt://'):
-                # Full URL provided — append params, respecting existing query string
+                # Full URL — append latency (and passphrase) without breaking existing params
                 sep = '&' if '?' in raw else '?'
                 srt_url = f'{raw}{sep}latency={latency}'
             else:
-                # Bare host:port — build URL from scratch
                 srt_url = f'srt://{raw}?latency={latency}'
 
             if srt_passphrase:
                 srt_url += f'&passphrase={srt_passphrase}'
 
-            return (
-                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy '
-                f'-f mpegts "{srt_url}"'
-            )
+            return base + ['-f', 'mpegts', srt_url]
+
         else:
-            # Custom RTMP or full SRT URL passed directly
-            dest_url = destination
-            if stream_key:
-                dest_url = f'{destination}/{stream_key}'
+            # Custom RTMP or full SRT URL
+            dest_url = f'{destination}/{stream_key}' if stream_key else destination
             if dest_url.startswith('srt://'):
-                return (
-                    f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy '
-                    f'-f mpegts "{dest_url}"'
-                )
-            return (
-                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy -g 60 '
-                f'-f flv "{dest_url}"'
-            )
+                return base + ['-f', 'mpegts', dest_url]
+            return base + ['-g', '60', '-f', 'flv', dest_url]
 
     def _monitor_stream(self, stream_name, process):
         """Monitor a running stream's FFmpeg output and update its status."""
@@ -222,6 +206,21 @@ class StreamManager:
                     process.kill()
                 break
 
+        # Capture any remaining stderr output to show the real FFmpeg error
+        try:
+            remaining = process.stderr.read()
+            if remaining:
+                # Print the last meaningful error lines from FFmpeg
+                error_lines = [l.strip() for l in remaining.splitlines() if l.strip()]
+                if error_lines:
+                    print(f"[FFmpeg stderr for '{stream_name}']:")
+                    for line in error_lines[-20:]:  # last 20 lines
+                        print(f"  {line}")
+                        if stream_name in self.active_streams:
+                            self._update_stream_stats(stream_name, line)
+        except Exception:
+            pass
+
         # If stream ends unexpectedly, check for restarts
         if stream_name in self.active_streams:
             stream = self.active_streams[stream_name]
@@ -229,7 +228,7 @@ class StreamManager:
                 stream['health']['restart_count'] += 1
                 stream['health']['last_restart'] = datetime.now(timezone.utc).isoformat()
                 print(f"Stream '{stream_name}' failed, attempting restart... (Attempt {stream['health']['restart_count']})")
-                time.sleep(self.restart_delay)  # Add a delay before restarting
+                time.sleep(self.restart_delay)
                 self._restart_stream(stream_name)
             else:
                 stream['status'] = 'failed'
@@ -282,14 +281,13 @@ class StreamManager:
         if not stream:
             return
 
-        # Restart the FFmpeg process
-        command = self._build_ffmpeg_command(
+        cmd_args = self._build_ffmpeg_command(
             stream['input'], stream['destination'], stream['stream_key'],
             stream.get('srt_passphrase'), stream.get('srt_latency')
         )
         try:
             new_process = subprocess.Popen(
-                shlex.split(command),
+                cmd_args,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 universal_newlines=True
