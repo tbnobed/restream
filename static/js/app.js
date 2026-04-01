@@ -85,7 +85,7 @@ function handleStartStream() {
         const srtLatency = document.getElementById('srtLatency').value.trim();
 
         if (!streamName || !inputSource || !srtHost) {
-            alert('Please fill in Stream Name, Input Source, and SRT host:port.');
+            alert('Please fill in Stream Name, Input Source, and SRT URL.');
             return;
         }
 

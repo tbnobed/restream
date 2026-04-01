@@ -131,11 +131,21 @@ class StreamManager:
                 f'-f flv rtmps://live-upload.instagram.com:443/rtmp/{stream_key}'
             )
         elif destination == "srt":
-            # SRT destination: build URL with optional passphrase and latency
+            # SRT destination: accept either a full srt:// URL or bare host:port
             latency = int(srt_latency) if srt_latency else 120
-            srt_url = f'srt://{stream_key}?latency={latency}'
+            raw = stream_key.strip()
+
+            if raw.startswith('srt://'):
+                # Full URL provided — append params, respecting existing query string
+                sep = '&' if '?' in raw else '?'
+                srt_url = f'{raw}{sep}latency={latency}'
+            else:
+                # Bare host:port — build URL from scratch
+                srt_url = f'srt://{raw}?latency={latency}'
+
             if srt_passphrase:
                 srt_url += f'&passphrase={srt_passphrase}'
+
             return (
                 f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy '
                 f'-f mpegts "{srt_url}"'
