@@ -14,12 +14,12 @@ class StreamManager:
         self.max_restart_attempts = 3  # Maximum restart attempts before giving up
         self.restart_delay = 5  # Delay in seconds between restarts
 
-    def start_stream(self, stream_name, input_source, destination, stream_key, owner, source_name=None):
+    def start_stream(self, stream_name, input_source, destination, stream_key, owner, source_name=None, srt_passphrase=None, srt_latency=None):
         if stream_name in self.active_streams:
             print(f"Stream '{stream_name}' is already running.")
             return False
 
-        command = self._build_ffmpeg_command(input_source, destination, stream_key)
+        command = self._build_ffmpeg_command(input_source, destination, stream_key, srt_passphrase, srt_latency)
         # Log command without exposing stream key
         safe_command = command.replace(stream_key, '[STREAM_KEY_REDACTED]') if stream_key else command
         print(f"Starting stream '{stream_name}' with command: {safe_command}")
@@ -37,6 +37,8 @@ class StreamManager:
                 'input': input_source,
                 'destination': destination,
                 'stream_key': stream_key,
+                'srt_passphrase': srt_passphrase,
+                'srt_latency': srt_latency,
                 'status': 'active',
                 'owner': owner,
                 'source_name': source_name or 'Unknown',
@@ -49,7 +51,6 @@ class StreamManager:
                     'last_restart': None,
                     'last_health_check': datetime.now(timezone.utc).isoformat()
                 }
-                # No terminate flag on fresh start
             }
             print(f"Stream '{stream_name}' started successfully.")
             # Start monitoring the stream
@@ -110,28 +111,48 @@ class StreamManager:
             for name, info in self.active_streams.items()
         }
 
-    def _build_ffmpeg_command(self, input_source, destination, stream_key):
-        # Build the appropriate FFmpeg command based on destination
+    def _build_ffmpeg_command(self, input_source, destination, stream_key, srt_passphrase=None, srt_latency=None):
+        # Wrap input in quotes if it contains special characters (e.g. SRT URLs with ?)
+        safe_input = f'"{input_source}"' if '?' in input_source or '&' in input_source else input_source
+
         if destination == "youtube":
             return (
-                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60  '
+                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy -g 60 '
                 f'-f flv rtmp://a.rtmp.youtube.com/live2/{stream_key}'
             )
         elif destination == "facebook":
             return (
-                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60  '
+                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy -g 60 '
                 f'-f flv rtmps://live-api-s.facebook.com:443/rtmp/{stream_key}'
             )
         elif destination == "instagram":
             return (
-                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60 '
+                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy -g 60 '
                 f'-f flv rtmps://live-upload.instagram.com:443/rtmp/{stream_key}'
             )
-        else:
-            # Custom or RTMP destination
+        elif destination == "srt":
+            # SRT destination: build URL with optional passphrase and latency
+            latency = int(srt_latency) if srt_latency else 120
+            srt_url = f'srt://{stream_key}?latency={latency}'
+            if srt_passphrase:
+                srt_url += f'&passphrase={srt_passphrase}'
             return (
-                f'ffmpeg -re -i {input_source} -c:v copy -c:a copy -g 60 '
-                f'-f flv {destination}/{stream_key}'
+                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy '
+                f'-f mpegts "{srt_url}"'
+            )
+        else:
+            # Custom RTMP or full SRT URL passed directly
+            dest_url = destination
+            if stream_key:
+                dest_url = f'{destination}/{stream_key}'
+            if dest_url.startswith('srt://'):
+                return (
+                    f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy '
+                    f'-f mpegts "{dest_url}"'
+                )
+            return (
+                f'ffmpeg -re -i {safe_input} -c:v copy -c:a copy -g 60 '
+                f'-f flv "{dest_url}"'
             )
 
     def _monitor_stream(self, stream_name, process):
@@ -253,7 +274,8 @@ class StreamManager:
 
         # Restart the FFmpeg process
         command = self._build_ffmpeg_command(
-            stream['input'], stream['destination'], stream['stream_key']
+            stream['input'], stream['destination'], stream['stream_key'],
+            stream.get('srt_passphrase'), stream.get('srt_latency')
         )
         try:
             new_process = subprocess.Popen(

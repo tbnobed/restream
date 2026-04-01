@@ -71,12 +71,20 @@
                                     <option value="facebook">📘 Facebook Live</option>
                                     <option value="instagram">📷 Instagram Live</option>
                                     <option value="custom">🌐 Custom RTMP</option>
+                                    <option value="srt">📡 Custom SRT</option>
                                 </select>
-                                <input type="text" class="form-control-modern mt-2 d-none" id="customDestination" placeholder="Enter custom RTMP URL">
+                                <input type="text" class="form-control-modern mt-2 d-none" id="customDestination" placeholder="Enter custom RTMP URL (rtmp://...)">
                             </div>
-                            <div class="form-group-modern">
+                            <div class="form-group-modern" id="streamKeyGroup">
                                 <label for="streamKey" class="form-label-modern">Stream Key</label>
                                 <input type="text" class="form-control-modern" id="streamKey" placeholder="Enter your stream key">
+                            </div>
+                            <!-- SRT Fields (hidden by default) -->
+                            <div class="form-group-modern d-none" id="srtFields">
+                                <label class="form-label-modern">SRT Destination</label>
+                                <input type="text" class="form-control-modern" id="srtHost" placeholder="host:port (e.g. 192.168.1.1:4999)">
+                                <input type="text" class="form-control-modern mt-2" id="srtPassphrase" placeholder="Passphrase (optional)">
+                                <input type="number" class="form-control-modern mt-2" id="srtLatency" placeholder="Latency ms (default: 120)" min="20" max="8000">
                             </div>
                         </div>
                         

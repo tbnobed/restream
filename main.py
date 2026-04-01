@@ -149,9 +149,13 @@ def handle_start_stream(data):
     destination = data.get('destination')
     stream_key = data.get('stream_key')
     source_name = data.get('source_name')
-    
+    srt_passphrase = data.get('srt_passphrase')
+    srt_latency = data.get('srt_latency')
+
     success = stream_manager.start_stream(
-        stream_name, input_source, destination, stream_key, owner=current_user.id, source_name=source_name
+        stream_name, input_source, destination, stream_key,
+        owner=current_user.id, source_name=source_name,
+        srt_passphrase=srt_passphrase, srt_latency=srt_latency
     )
     return {'success': success}
 

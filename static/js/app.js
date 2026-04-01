@@ -43,14 +43,19 @@ function initializeControls() {
     // Handle destination changes
     elements.destination.addEventListener('change', function() {
         const customDestination = elements.customDestination;
-        const streamKeyField = elements.streamKey;
+        const streamKeyGroup = document.getElementById('streamKeyGroup');
+        const srtFields = document.getElementById('srtFields');
+
+        // Hide all optional sections first
+        customDestination.classList.add('d-none');
+        streamKeyGroup.classList.remove('d-none');
+        srtFields.classList.add('d-none');
 
         if (this.value === 'custom') {
             customDestination.classList.remove('d-none');
-            streamKeyField.parentElement.classList.add('d-none');
-        } else {
-            customDestination.classList.add('d-none');
-            streamKeyField.parentElement.classList.remove('d-none');
+        } else if (this.value === 'srt') {
+            streamKeyGroup.classList.add('d-none');
+            srtFields.classList.remove('d-none');
         }
     });
 
@@ -61,21 +66,50 @@ function initializeControls() {
 function handleStartStream() {
     const streamName = document.getElementById('streamName').value;
     const inputSelect = document.getElementById('inputSource');
-    const inputSource = inputSelect.value === 'custom' 
-        ? document.getElementById('customInput').value 
+    const inputSource = inputSelect.value === 'custom'
+        ? document.getElementById('customInput').value
         : inputSelect.value;
-    const destination = document.getElementById('destination').value === 'custom'
-        ? document.getElementById('customDestination').value
-        : document.getElementById('destination').value;
-    const streamKey = document.getElementById('streamKey').value;
+    const destSelect = document.getElementById('destination');
+    const destValue = destSelect.value;
 
     // Get the source name from the selected option
     const selectedOption = inputSelect.options[inputSelect.selectedIndex];
-    const sourceName = inputSelect.value === 'custom' 
-        ? 'Custom RTMP' 
+    const sourceName = inputSelect.value === 'custom'
+        ? 'Custom RTMP'
         : (selectedOption.dataset.sourceName || selectedOption.textContent.trim().replace('📺 ', ''));
 
-    if (!streamName || !inputSource || !destination || ((destination === 'youtube' || destination === 'facebook' || destination === 'instagram') && !streamKey)) {
+    // SRT destination
+    if (destValue === 'srt') {
+        const srtHost = document.getElementById('srtHost').value.trim();
+        const srtPassphrase = document.getElementById('srtPassphrase').value.trim();
+        const srtLatency = document.getElementById('srtLatency').value.trim();
+
+        if (!streamName || !inputSource || !srtHost) {
+            alert('Please fill in Stream Name, Input Source, and SRT host:port.');
+            return;
+        }
+
+        socket.emit('start_stream', {
+            stream_name: streamName,
+            input: inputSource,
+            destination: 'srt',
+            stream_key: srtHost,  // host:port used as key to build srt:// URL
+            source_name: sourceName,
+            srt_passphrase: srtPassphrase || null,
+            srt_latency: srtLatency || null
+        });
+        return;
+    }
+
+    // RTMP / social destinations
+    const destination = destValue === 'custom'
+        ? document.getElementById('customDestination').value
+        : destValue;
+    const streamKey = document.getElementById('streamKey').value;
+
+    if (!streamName || !inputSource || !destination || (
+        ['youtube', 'facebook', 'instagram'].includes(destination) && !streamKey
+    )) {
         alert('Please fill in all required fields.');
         return;
     }
@@ -233,7 +267,8 @@ function createStreamElement(name, data) {
         'facebook': '📘 Facebook',
         'instagram': '📷 Instagram',
         'x': '❌ X Live',
-        'custom': '🌐 Custom'
+        'custom': '🌐 Custom RTMP',
+        'srt': '📡 SRT'
     };
     const formattedDestination = destinationIcons[data.destination] || data.destination;
     
